@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\License;
 use App\Models\Product;
 use App\Models\ProductVersion;
+use App\Models\ResetLicenseActivityLog;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -157,6 +159,34 @@ class ApiController extends Controller
                 ->first();
             return response()->json([
                 $previousVersion,
+            ]);
+        }
+    }
+
+    public function reset_license(Request $request)
+    {
+        $request->validate([
+            'item_id' => 'required|exists:products,item_id',
+            'purchase_code' => 'required',
+        ]);
+        try {
+            $records = ResetLicenseActivityLog::where('purchase_code', $request->purchase_code)->whereBetween('reset_license_time', [
+                Carbon::now()->startOfWeek(),
+                Carbon::now()->endOfWeek()
+            ])->first();
+            
+            if ($records == null) {
+                ResetLicenseActivityLog::updateOrCreate(
+                    ['purchase_code' => $request->purchase_code],
+                    ['reset_license_time' => date('Y-m-d H:i:s')],
+                );
+                return response()->json([
+                    'message' => "Reset License time updated succefully",
+                ]);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'Error' => "Can not update within the week",
             ]);
         }
     }

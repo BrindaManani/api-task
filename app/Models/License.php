@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class License extends Model
 {
@@ -27,5 +28,8 @@ class License extends Model
     public function product_versions(): HasMany
     {
         return $this->hasMany(ProductVersion::class, 'pid', 'item_id');
+    }
+    public function reset_license_activity_log(): HasOne {
+        return $this->hasOne(ResetLicenseActivityLog::class, 'purchase_code', 'purchase_code');
     }
 }
