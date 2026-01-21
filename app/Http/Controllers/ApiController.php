@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\License;
 use App\Models\Product;
+use App\Models\ProductVersion;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -110,6 +111,53 @@ class ApiController extends Controller
             return response()->json([
                 'Error' => 'Active domain not found'
             ], 500);
+        }
+    }
+
+    public function check_update(Request $request)
+    {
+        $request->validate([
+            'item_id' => 'required|exists:products,item_id',
+            'version' => 'required|regex:/^\d+\.\d+(?:\.\d+)?$/',
+            'initial' => 'nullable|in:true,false',
+        ]);
+        if ($request->initial == true) {
+            $install = License::where('item_id', $request->item_id)->latest()->first();
+            $new = ProductVersion::where('pid', $request->item_id)->latest()->first();
+
+            if (version_compare($request->version, $new->version, '<')) {
+
+                return response()->json([
+                    'Success' => true,
+                    'message' => "Update available",
+                    $data = [
+                        'current_version' => $install->installed_version,
+                        'latest_version' => $new->version,
+                        'has_sql_update' => true,
+                        'release_date' => $new->created_at,
+                        'changelog' => $new->changelog,
+                        'summary' => $new->summary,
+                    ],
+                ]);
+            } else {
+                $data = [
+                    'current_version' => $install->installed_version,
+                    'latest_version' => $new->version,
+                ];
+                return response()->json([
+                    'Success' => true,
+                    'message' => "No Update available",
+                    $data,
+                ]);
+            }
+        } else {
+            $previousVersion = ProductVersion::where('pid', $request->item_id)
+                ->latest()
+                ->offset(1)
+                ->first();
+            return response()->json([
+                $previousVersion,
+            ]);
         }
     }
 }
