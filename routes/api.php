@@ -9,3 +9,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('/register-product/{id?}', [ApiController::class, 'register_product']);
+Route::post('/validate-product', [ApiController::class, 'validate_product']);

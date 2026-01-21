@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class License extends Model
 {
@@ -19,5 +21,11 @@ class License extends Model
         'ip',
         'os',
         'purchase_count',
+        'last_validate_request',
     ];
+
+    public function product_versions(): HasMany
+    {
+        return $this->hasMany(ProductVersion::class, 'pid', 'item_id');
+    }
 }

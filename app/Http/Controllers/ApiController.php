@@ -57,4 +57,41 @@ class ApiController extends Controller
         dd($request);
         return response()->json();
     }
+
+    public function validate_product(Request $request)
+    {
+        $request->validate([
+            'item_id' => 'required|exists:products,item_id',
+            'purchase_code' => 'required',
+            'activated_domain' => 'required|starts_with:http://,https://',
+            'version' => 'required|regex:/^\d+\.\d+(?:\.\d+)?$/',
+        ]);
+        try {
+            $validate_product = License::where([
+                ['item_id', $request->item_id],
+                ['purchase_code', $request->purchase_code],
+                ['activated_domain', $request->activated_domain],
+            ])->whereHas('product_versions', function ($query) use ($request) {
+                $query->where('pid', $request->item_id)
+                    ->where('version', $request->version);
+            })->first();
+            if ($validate_product !== null) {
+                License::updateOrCreate(
+                    ['id' => $validate_product->id],
+                    ['last_validate_request' => date('Y-m-d H:i:s')],
+                );
+                return response()->json([
+                    'success' => "Validation success",
+                ]);
+            } else {
+                return response()->json([
+                    'Error' => 'Invalid Data given'
+                ], 404);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'Error' => 'Something went wrong !!'
+            ], 500);
+        }
+    }
 }
