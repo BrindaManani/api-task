@@ -94,4 +94,22 @@ class ApiController extends Controller
             ], 500);
         }
     }
+
+    public function get_active_domain(request $request)
+    {
+        try {
+            $request->validate([
+                'purchase_code' => 'required',
+            ]);
+            $domain = License::where('purchase_code', $request->purchase_code)->first();
+            return response()->json([
+                'Success' => "Active domain found",
+                $domain->activated_domain,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'Error' => 'Active domain not found'
+            ], 500);
+        }
+    }
 }
