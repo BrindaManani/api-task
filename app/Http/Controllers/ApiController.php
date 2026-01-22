@@ -285,12 +285,19 @@ class ApiController extends Controller
             $license = License::where('purchase_code', $request->license_code)
                 ->where('buyer', $request->client_name)
                 ->where('activated_domain', $request->activated_domain)->get();
-            $product = ProductVersion::where('vid', $vid)->get();
+            $product = ProductVersion::where('vid', $vid)->first();
             if (count($license) > 0 || count($product) > 0) {
-                return response()->json([
-                    'Product detail' => $product,
-                    'License detail' => $license
-                ]);
+                $filePath = storage_path('app/public/'.$product->sql_file);
+                dd($filePath);
+                // if (!file_exists($filePath)) {
+                //     return response()->json(['error' => 'File not found'], 404);
+                // }
+
+                return response()->download($filePath);
+                // return response()->json([
+                //     'Product detail' => $product,
+                //     'License detail' => $license
+                // ]);
             } else {
                 throw new \Exception();
             }
@@ -304,5 +311,19 @@ class ApiController extends Controller
                 'Error' => "Data not found"
             ], 404);
         }
+    }
+
+    public function products($id = null)
+    {
+        
+        if($id != null){
+            $products = Product::where('id', $id)->get();
+        }
+        else{
+            $products = Product::get();
+        }
+        return response()->json([
+            $products
+        ]);
     }
 }
