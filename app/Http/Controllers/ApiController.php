@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BuyerProfile;
 use App\Models\License;
 use App\Models\Product;
 use App\Models\ProductVersion;
@@ -194,6 +195,30 @@ class ApiController extends Controller
             return response()->json([
                 'Error' => "Can not find data",
             ], 404);
+        }
+    }
+
+    public function buyers($id = null)
+    {
+        try {
+            if ($id != null) {
+                $name = BuyerProfile::where('id', $id)->first();
+                $buyer = License::where('buyer', $name->envato_username)->get();
+                if ($buyer) {
+                    return response()->json([
+                        'Buyer ID' => $name->id,
+                        'data' => $buyer
+                    ]);
+                }
+            }
+            $buyer = License::paginate(10);
+            return response()->json([
+                $buyer
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'Error' => "Buyer id not found"
+            ],404);
         }
     }
 }
