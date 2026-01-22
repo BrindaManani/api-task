@@ -278,4 +278,31 @@ class ApiController extends Controller
             ], 404);
         }
     }
+
+    public function download_update_sql(Request $request, $vid)
+    {
+        try {
+            $license = License::where('purchase_code', $request->license_code)
+                ->where('buyer', $request->client_name)
+                ->where('activated_domain', $request->activated_domain)->get();
+            $product = ProductVersion::where('vid', $vid)->get();
+            if (count($license) > 0 || count($product) > 0) {
+                return response()->json([
+                    'Product detail' => $product,
+                    'License detail' => $license
+                ]);
+            } else {
+                throw new \Exception();
+            }
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'Error' => "Data not found"
+            ], 404);
+        } catch (\Exception $e) {
+            dd($e);
+            return response()->json([
+                'Error' => "Data not found"
+            ], 404);
+        }
+    }
 }

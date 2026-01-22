@@ -15,4 +15,5 @@ Route::prefix('license')->name('license.')->group(function () {
     Route::get('/buyers/{id?}', [ApiController::class, 'buyers']);
     Route::get('/api-requests', [ApiController::class, 'api_requests']);
     Route::get('/api-activities', [ApiController::class, 'api_activities']);
+    Route::get('/download-update/sql/{vid} ', [ApiController::class, 'download_update_sql']);
 });
