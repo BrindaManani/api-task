@@ -1,11 +1,17 @@
 <?php
 
 use App\Http\Controllers\ApiController;
+use App\Http\Controllers\V1\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
 Route::prefix('license')->name('license.')->group(function () {
+
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::middleware('throttle:auth')->group(function () {
+        Route::post('/login', [AuthController::class, 'login']);
+    });
 
     Route::post('/register-product/{id?}', [ApiController::class, 'register_product']);
     Route::post('/validate-product', [ApiController::class, 'validate_product']);
