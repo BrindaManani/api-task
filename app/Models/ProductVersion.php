@@ -19,4 +19,8 @@ class ProductVersion extends Model
     {
         return $this->belongsTo(License::class);
     }
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

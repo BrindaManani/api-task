@@ -11,6 +11,7 @@ use App\Models\ProductVersion;
 use App\Models\ResetLicenseActivityLog;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Container\Attributes\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
@@ -287,9 +288,9 @@ class ApiController extends Controller
                 ->where('activated_domain', $request->activated_domain)->get();
             $product = ProductVersion::where('vid', $vid)->first();
             if (count($license) > 0 || count($product) > 0) {
-                $filePath = storage_path('app/public/'.$product->sql_file);
-                dd($filePath);
-                // if (!file_exists($filePath)) {
+                $filePath = storage_path('app/public/' . $product->sql_file);
+                // dd($filePath);
+                // if (Storage::exists($filePath)) {
                 //     return response()->json(['error' => 'File not found'], 404);
                 // }
 
@@ -315,15 +316,34 @@ class ApiController extends Controller
 
     public function products($id = null)
     {
-        
-        if($id != null){
-            $products = Product::where('id', $id)->get();
+        try {
+            if ($id != null) {
+                $products = Product::where('id', $id)->first();
+                if ($products->license_update == 1) {
+                    $version = ProductVersion::where('pid', $products->item_id)->latest()->first();
+                    return response()->json([
+                        'Latest Version' => $version->version,
+                        'Product data' => $products
+                    ]);
+                }
+                return response()->json([
+                    $products
+                ]);
+            } else {
+                $products = Product::get();
+                return response()->json([
+                    $products
+                ]);
+            }
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'Error' => "Data not found"
+            ], 404);
+        } catch (\Exception $e) {
+            dd($e);
+            return response()->json([
+                'Error' => "Data not found"
+            ], 404);
         }
-        else{
-            $products = Product::get();
-        }
-        return response()->json([
-            $products
-        ]);
     }
 }
