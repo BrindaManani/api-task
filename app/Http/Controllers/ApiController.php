@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApiActivity;
 use App\Models\ApiRequest;
 use App\Models\BuyerProfile;
 use App\Models\License;
@@ -241,6 +242,37 @@ class ApiController extends Controller
                 'Error' => "Data not found"
             ], 404);
         } catch (\Exception $e) {
+            return response()->json([
+                'Error' => "Data not found"
+            ], 404);
+        }
+    }
+
+    public function api_activities(Request $request)
+    {
+        try {
+            if ($request->has('purchase_code') && $request->has('domain') && $request->has('item_id')) {
+                $activities = ApiActivity::where('purchase_code', $request->purchase_code)->where('domain', $request->domain)->where('item_id', $request->item_id)->get();
+                if (count($activities) > 0) {
+                    return response()->json([
+                        $activities
+                    ]);
+                }
+            }
+
+            if ($request->has('event_type')) {
+                $filter = ApiActivity::query();
+                $filtered_activity = $filter->where('event_type', 'LIKE', "%{$request->event_type}%")->paginate(10);
+                return response()->json([
+                    $filtered_activity
+                ]);
+            }
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'Error' => "Data not found"
+            ], 404);
+        } catch (\Exception $e) {
+            dd($e);
             return response()->json([
                 'Error' => "Data not found"
             ], 404);

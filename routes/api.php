@@ -4,9 +4,6 @@ use App\Http\Controllers\ApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
 
 Route::prefix('license')->name('license.')->group(function () {
 
@@ -17,4 +14,5 @@ Route::prefix('license')->name('license.')->group(function () {
     Route::post('/reset-license', [ApiController::class, 'reset_license']);
     Route::get('/buyers/{id?}', [ApiController::class, 'buyers']);
     Route::get('/api-requests', [ApiController::class, 'api_requests']);
+    Route::get('/api-activities', [ApiController::class, 'api_activities']);
 });
