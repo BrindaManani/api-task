@@ -7,6 +7,7 @@ use App\Models\ApiRequest;
 use App\Models\BlockedIp;
 use App\Models\BuyerProfile;
 use App\Models\License;
+use App\Models\LicenseActivityLog;
 use App\Models\Product;
 use App\Models\ProductVersion;
 use App\Models\ResetLicenseActivityLog;
@@ -367,6 +368,37 @@ class ApiController extends Controller
             }
             return response()->json([
                 'blocked ip address' => $ips
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'Error' => "Data not found"
+            ], 404);
+        } catch (\Exception $e) {
+            dd($e);
+            return response()->json([
+                'Error' => "Data not found"
+            ], 404);
+        }
+    }
+
+    public function license_report(Request $request)
+    {
+        try {
+            $request->validate([
+                'item_id' => 'required',
+            ]);
+            $license = License::where('item_id', $request->item_id)->latest()->FirstOrFail();
+            $activated_domain = License::where('item_id', $request->item_id)->distinct('activated_domain')->count();
+            $activity_count = LicenseActivityLog::where('license_id', $license->id)->count();
+            $first_activity = LicenseActivityLog::where('license_id', $license->id)->oldest()->value('created_at');
+            $last_activity = LicenseActivityLog::where('license_id', $license->id)->latest()->value('created_at');
+            return response()->json([
+                'Purchase code' => $license->purchase_code,
+                'activated_domain' => $activated_domain,
+                'total activity count' => $activity_count,
+                'first_activity' => $first_activity,
+                'last_activity' => $last_activity
+
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
