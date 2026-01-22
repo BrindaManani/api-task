@@ -16,4 +16,5 @@ Route::prefix('license')->name('license.')->group(function () {
     Route::post('/check-update', [ApiController::class, 'check_update']);
     Route::post('/reset-license', [ApiController::class, 'reset_license']);
     Route::get('/buyers/{id?}', [ApiController::class, 'buyers']);
+    Route::get('/api-requests', [ApiController::class, 'api_requests']);
 });

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApiRequest;
 use App\Models\BuyerProfile;
 use App\Models\License;
 use App\Models\Product;
@@ -10,6 +11,8 @@ use App\Models\ResetLicenseActivityLog;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Log;
 
 class ApiController extends Controller
 {
@@ -218,7 +221,29 @@ class ApiController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'Error' => "Buyer id not found"
-            ],404);
+            ], 404);
+        }
+    }
+
+    public function api_requests(Request $request)
+    {
+        try {
+            $api_request = ApiRequest::where('purchase_code', $request->purchase_code)->where('domain', $request->domain)->get();
+            if (count($api_request) > 0) {
+                return response()->json([
+                    $api_request
+                ]);
+            } else {
+                throw new \Exception();
+            }
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'Error' => "Data not found"
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'Error' => "Data not found"
+            ], 404);
         }
     }
 }
