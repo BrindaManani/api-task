@@ -17,4 +17,5 @@ Route::prefix('license')->name('license.')->group(function () {
     Route::get('/api-activities', [ApiController::class, 'api_activities']);
     Route::get('/download-update/sql/{vid} ', [ApiController::class, 'download_update_sql']);
     Route::get('/products/{id?}', [ApiController::class, 'products']);
+    Route::get('/blocked-ips/{id?}', [ApiController::class, 'blocked_ips']);
 });

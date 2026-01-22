@@ -24,7 +24,7 @@ class Product extends Model
         return $this->belongsTo(BuyerProfile::class);
     }
 
-    public function product_version():HasMany
+    public function product_version(): HasMany
     {
         return $this->hasMany(ProductVersion::class, 'pid', 'item_id');
     }

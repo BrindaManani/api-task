@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ApiActivity;
 use App\Models\ApiRequest;
+use App\Models\BlockedIp;
 use App\Models\BuyerProfile;
 use App\Models\License;
 use App\Models\Product;
@@ -273,7 +274,6 @@ class ApiController extends Controller
                 'Error' => "Data not found"
             ], 404);
         } catch (\Exception $e) {
-            dd($e);
             return response()->json([
                 'Error' => "Data not found"
             ], 404);
@@ -335,6 +335,39 @@ class ApiController extends Controller
                     $products
                 ]);
             }
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'Error' => "Data not found"
+            ], 404);
+        } catch (\Exception $e) {
+            dd($e);
+            return response()->json([
+                'Error' => "Data not found"
+            ], 404);
+        }
+    }
+
+    public function blocked_ips(Request $request, $id = null)
+    {
+        try {
+            if ($id != null) {
+                $ips = BlockedIp::where('id', $id)->firstOrFail('ip_address');
+            } else {
+                $ips = BlockedIp::distinct('ip_address')->pluck('ip_address');
+            }
+            if ($request->has('block_type')) {
+                $filter = BlockedIp::where('block_type', $request->block_type)->get();
+                if ($filter->isEmpty()) {
+                    return response()->json(['message' => 'Block type not found'], 404);
+                } else {
+                    return response()->json([
+                        $filter
+                    ]);
+                }
+            }
+            return response()->json([
+                'blocked ip address' => $ips
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'Error' => "Data not found"
