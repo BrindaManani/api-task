@@ -170,24 +170,30 @@ class ApiController extends Controller
             'purchase_code' => 'required',
         ]);
         try {
-            $records = ResetLicenseActivityLog::where('purchase_code', $request->purchase_code)->whereBetween('reset_license_time', [
-                Carbon::now()->startOfWeek(),
-                Carbon::now()->endOfWeek()
-            ])->first();
-            
-            if ($records == null) {
-                ResetLicenseActivityLog::updateOrCreate(
+            $license = ResetLicenseActivityLog::where('purchase_code', $request->purchase_code)->firstOrFail();
+
+            $records = ResetLicenseActivityLog::where('purchase_code', $request->purchase_code)
+                ->whereBetween('reset_license_time', [
+                    Carbon::now()->startOfWeek(),
+                    Carbon::now()->endOfWeek()
+                ])->exists();
+            if ($license != null && $records == false) {
+                $time = ResetLicenseActivityLog::updateOrCreate(
                     ['purchase_code' => $request->purchase_code],
                     ['reset_license_time' => date('Y-m-d H:i:s')],
                 );
                 return response()->json([
                     'message' => "Reset License time updated succefully",
                 ]);
+            } else {
+                return response()->json([
+                    'Error' => "Can not reset License within the week",
+                ]);
             }
         } catch (Exception $e) {
             return response()->json([
-                'Error' => "Can not update within the week",
-            ]);
+                'Error' => "Can not find data",
+            ], 404);
         }
     }
 }
